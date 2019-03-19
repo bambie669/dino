@@ -1,0 +1,75 @@
+let face = document.getElementsByTagName('span')[0];
+let head = document.getElementsByTagName('div')[0];
+let isDead = true;
+let canBlink = true;
+
+document.onmousemove = trackMouse;
+window.onresize = squish;
+
+//Blink every 5.5 seconds
+setInterval(function(){
+  
+  if(!canBlink){ return; }
+  
+  face.classList.add('blink');
+  
+  setTimeout(function(){
+    face.classList.remove('blink');
+  },200);
+  
+},5500)
+
+
+function trackMouse(event){
+  
+  if(!isDead){ return; }
+  
+  //mouse coordinates
+  let mX = event.clientX;
+  let mY = event.clientY;
+  
+  //viewport dimentions
+  let vpH = window.innerHeight;
+  let vpW = window.innerWidth;
+  
+  //head boundingbox
+  let headBox = head.getBoundingClientRect();
+  
+  //face boundingbox
+  let faceBox = face.getBoundingClientRect();
+  
+  //the magic
+  let calcX = (headBox.width - faceBox.width)*(mX/vpW);
+  let calcY = (headBox.height - faceBox.height + 50)*(mY/vpH);
+  
+  //add bounding restrictions
+  calcX = clamp(calcX, 60, 150);
+  calcY = clamp(calcY, 60, 130);
+
+  face.setAttribute('style', 'top: '+calcY+'px; left: '+calcX+'px;');
+    
+}
+
+function clamp(num, min, max) {
+  return num <= min ? min : num >= max ? max : num;
+}
+
+
+function squish(){
+  
+  //head boundingbox
+  let headBox = head.getBoundingClientRect();
+  
+  let wP = 1-headBox.width/300;
+  let hP = 1-headBox.height/300;
+  
+  let squishP = Math.max(wP, hP)*2;
+  
+  canBlink = squishP > 1.2 ? false : true;
+  isDead = squishP > 1.3 ? false : true;
+  
+  head.setAttribute('style', 'background: rgba(169,3,41,'+squishP+');');
+  
+  face.style.opacity = 1.6-squishP;
+  
+}
